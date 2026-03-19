@@ -1,5 +1,5 @@
 import defu from 'defu';
-import { RolldownString, withMagicString } from 'rolldown-string';
+import { generateTransform, RolldownString, withMagicString } from 'rolldown-string';
 import { MagicStringAST } from 'magic-string-ast';
 import { getBabelParserOptions, getLang } from 'ast-kit';
 
@@ -49,7 +49,11 @@ function assignMetadata(
     ? getVisibilityScope(this, path as NodePath<t.FunctionDeclaration>)
     : undefined;
 
-  const fnCode = this.magicString.sliceNode(path.node);
+  this.magicString.prependRight(
+    path.node.start ?? 0,
+    '/* #__PURE__ */ (($ => (globalThis.__TYPEGPU_META__ ??= new WeakMap()).set($.f = (',
+  );
+  this.magicString.appendLeft(path.node.end ?? 0, `), ${metadata}) && $.f)({}))`);
 
   if (visibility) {
     // Hoisting the declaration to the top of the scope
@@ -57,22 +61,18 @@ function assignMetadata(
       ? (visibility.scope.node.body[0].start ?? 0)
       : (visibility.scope.node.start ?? 0) + 1;
 
-    let nodeToOverride: t.Node = path.node;
-    let code = `const ${visibility.name} = ${fnWrapperTemplate(fnCode, metadata)};\n\n`;
+    let nodeToUpdate: t.Node = path.node;
+
+    this.magicString.prependRight(path.node.start ?? 0, `const ${visibility.name} = `);
+    this.magicString.appendLeft(path.node.end ?? 0, ';\n\n');
 
     if (t.isExportNamedDeclaration(path.parent)) {
-      nodeToOverride = path.parent;
-      code = `export ${code}`;
+      nodeToUpdate = path.parent;
     }
 
     if ((path.node.start ?? 0) > insertPos) {
-      this.magicString.removeNode(nodeToOverride);
-      this.magicString.prependLeft(insertPos, code);
-    } else {
-      this.magicString.overwriteNode(nodeToOverride, code);
+      this.magicString.moveNode(nodeToUpdate, insertPos);
     }
-  } else {
-    this.magicString.overwriteNode(path.node, fnWrapperTemplate(fnCode, metadata));
   }
 }
 
@@ -132,12 +132,9 @@ export const unpluginFactory: UnpluginFactory<Options> = (rawOptions) => {
             str.toString(),
             getBabelParserOptions(getLang(id), {
               sourceType: 'module',
-              attachComment: true,
-              comments: true,
               allowReturnOutsideFunction: true,
             }),
           );
-          console.log(ast.comments);
         } catch (cause) {
           console.warn(
             `[unplugin-typegpu] Failed to parse ${id}. Cause: ${
@@ -164,6 +161,8 @@ export const unpluginFactory: UnpluginFactory<Options> = (rawOptions) => {
         });
 
         traverse(ast, functionVisitor, undefined, state);
+
+        console.log(generateTransform(magicString, id)?.code);
       }),
     },
   };

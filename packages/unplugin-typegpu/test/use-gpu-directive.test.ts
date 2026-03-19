@@ -630,11 +630,13 @@ describe('[ROLLUP] "use gpu" directive', () => {
       console.log(add);
       console.log(mul);
 
+      /** ADD */
       function add(a, b) {
         'use gpu';
         return a + b;
       }
 
+      /** MUL */
       function mul(a, b) {
         'use gpu';
         return a * b;
@@ -643,17 +645,7 @@ describe('[ROLLUP] "use gpu" directive', () => {
     `;
 
     expect(await rollupTransform(code)).toMatchInlineSnapshot(`
-      "const mul = /* #__PURE__ */ (($ => (globalThis.__TYPEGPU_META__ ??= new WeakMap()).set($.f = (function mul(a, b) {
-              'use gpu';
-              return __tsover_mul(a, b);
-            }), {
-          v: 1,
-          name: "mul",
-          ast: {"params":[{"type":"i","name":"a"},{"type":"i","name":"b"}],"body":[0,[[10,[1,"a","*","b"]]]],"externalNames":[]},
-          externals: () => ({}),
-        }) && $.f)({}));
-
-      const add = /* #__PURE__ */ (($ => (globalThis.__TYPEGPU_META__ ??= new WeakMap()).set($.f = (function add(a, b) {
+      "const add = /* #__PURE__ */ (($ => (globalThis.__TYPEGPU_META__ ??= new WeakMap()).set($.f = (function add(a, b) {
               'use gpu';
               return __tsover_add(a, b);
             }), {
@@ -663,8 +655,23 @@ describe('[ROLLUP] "use gpu" directive', () => {
           externals: () => ({}),
         }) && $.f)({}));
 
+      const mul = /* #__PURE__ */ (($ => (globalThis.__TYPEGPU_META__ ??= new WeakMap()).set($.f = (function mul(a, b) {
+              'use gpu';
+              return __tsover_mul(a, b);
+            }), {
+          v: 1,
+          name: "mul",
+          ast: {"params":[{"type":"i","name":"a"},{"type":"i","name":"b"}],"body":[0,[[10,[1,"a","*","b"]]]],"externalNames":[]},
+          externals: () => ({}),
+        }) && $.f)({}));
+
       console.log(add);
             console.log(mul);
+
+            /** ADD */
+            
+
+            /** MUL */
       "
     `);
   });
@@ -687,23 +694,23 @@ describe('[ROLLUP] "use gpu" directive', () => {
     `;
 
     expect(await rollupTransform(code)).toMatchInlineSnapshot(`
-      "const mul = /* #__PURE__ */ (($ => (globalThis.__TYPEGPU_META__ ??= new WeakMap()).set($.f = (function mul(a, b) {
-              'use gpu';
-              return __tsover_mul(a, b);
-            }), {
-          v: 1,
-          name: "mul",
-          ast: {"params":[{"type":"i","name":"a"},{"type":"i","name":"b"}],"body":[0,[[10,[1,"a","*","b"]]]],"externalNames":[]},
-          externals: () => ({}),
-        }) && $.f)({}));
-
-      const add = /* #__PURE__ */ (($ => (globalThis.__TYPEGPU_META__ ??= new WeakMap()).set($.f = (function add(a, b) {
+      "const add = /* #__PURE__ */ (($ => (globalThis.__TYPEGPU_META__ ??= new WeakMap()).set($.f = (function add(a, b) {
               'use gpu';
               return __tsover_add(a, b);
             }), {
           v: 1,
           name: "add",
           ast: {"params":[{"type":"i","name":"a"},{"type":"i","name":"b"}],"body":[0,[[10,[1,"a","+","b"]]]],"externalNames":[]},
+          externals: () => ({}),
+        }) && $.f)({}));
+
+      const mul = /* #__PURE__ */ (($ => (globalThis.__TYPEGPU_META__ ??= new WeakMap()).set($.f = (function mul(a, b) {
+              'use gpu';
+              return __tsover_mul(a, b);
+            }), {
+          v: 1,
+          name: "mul",
+          ast: {"params":[{"type":"i","name":"a"},{"type":"i","name":"b"}],"body":[0,[[10,[1,"a","*","b"]]]],"externalNames":[]},
           externals: () => ({}),
         }) && $.f)({}));
 
